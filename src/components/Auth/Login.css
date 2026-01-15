@@ -12,7 +12,12 @@
     max-width: 420px;
     padding: var(--spacing-2xl);
     animation: fadeIn var(--transition-slow);
+    border-radius: 32px;
+    /* Nicely rounded corners */
+    box-shadow: var(--shadow-2xl);
 }
+
+/* ... headers ... */
 
 .login-header {
     text-align: center;
@@ -45,8 +50,11 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-secondary);
+    margin-left: 4px;
+    /* Align with input curve */
 }
 
+/* ... error text ... */
 .error-text {
     color: var(--error);
     font-size: 0.875rem;
@@ -57,28 +65,28 @@
     border: 1px solid var(--error);
 }
 
+/* Flexbox Divider (Glass-friendly) */
 .divider {
-    position: relative;
-    text-align: center;
-    margin: var(--spacing-md) 0;
+    display: flex;
+    align-items: center;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
 }
 
-.divider::before {
+.divider::before,
+.divider::after {
     content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 100%;
+    flex: 1;
     height: 1px;
     background: var(--border);
 }
 
 .divider span {
-    position: relative;
-    background: var(--bg-secondary);
-    padding: 0 var(--spacing-md);
-    color: var(--text-tertiary);
-    font-size: 0.875rem;
+    /* No properties needed for span now */
+    padding: 0;
+    background: transparent;
 }
 
 .toggle-mode {

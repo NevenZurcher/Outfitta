@@ -1,6 +1,14 @@
+/* Filled star for favorites using free Boxicons */
+.favorite-filled {
+    color: var(--primary);
+    font-weight: 900;
+}
+
 .clothing-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
     transition: all var(--transition-base);
@@ -39,16 +47,63 @@
 
 .card-actions {
     position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-sm);
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: var(--spacing-sm);
     display: flex;
-    gap: var(--spacing-xs);
+    justify-content: space-between;
+    /* Pushes buttons to corners */
     opacity: 0;
     transition: opacity var(--transition-base);
+    z-index: 5;
+    pointer-events: none;
+    /* Allow clicking through the container to the image */
 }
 
 .clothing-card:hover .card-actions {
     opacity: 1;
+}
+
+/* Always show actions if favorite is active */
+.card-actions.has-favorite {
+    opacity: 1;
+}
+
+/* But hide the delete button unless hovering */
+.card-actions.has-favorite .delete-btn {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.card-actions.has-favorite:hover .delete-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.action-btn {
+    pointer-events: auto;
+    /* Re-enable clicks on buttons */
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.action-btn.favorite-active {
+    color: var(--warning);
+    border-color: var(--warning);
+    background: var(--glass-bg);
 }
 
 .action-btn {
@@ -94,10 +149,13 @@
 }
 
 .category-text {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    /* Increased slightly for Syne's distinct look */
+    font-weight: 700;
     text-transform: capitalize;
     color: var(--text-secondary);
+    letter-spacing: 0.02em;
 }
 
 .card-description {
@@ -126,9 +184,36 @@
     text-transform: capitalize;
 }
 
+/* Mobile Optimization: Actions always visible */
+@media (max-width: 1024px) {
+    .card-actions {
+        opacity: 1;
+    }
+
+    .card-actions.has-favorite .delete-btn {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
 .generate-btn {
     width: 100%;
     margin-top: var(--spacing-sm);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    /* Reduced from 0.8rem */
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.02em;
     padding: var(--spacing-sm);
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.generate-btn:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
 }

@@ -117,9 +117,25 @@
 
 .generate-btn {
     height: 56px;
-    font-size: 1.125rem;
+    font-size: 1rem;
+    /* Reduced from 1.1rem */
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.02em;
     margin-bottom: var(--spacing-xl);
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+@media (min-width: 480px) {
+    .generate-btn {
+        font-size: 1.125rem;
+    }
+}
+
+.generate-btn:hover:not(:disabled) {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
 }
 
 .outfit-result {

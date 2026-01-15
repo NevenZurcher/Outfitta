@@ -36,7 +36,10 @@
 
 .nav-item.active {
     color: var(--primary);
-    background: var(--primary-glow);
+    background: transparent;
+    /* Removed purple glow background */
+    transform: translateY(-2px);
+    /* Subtle lift instead */
 }
 
 .nav-icon {
@@ -45,9 +48,10 @@
 
 .nav-label {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-family: var(--font-heading);
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.05em;
 }
 
 @media (min-width: 768px) {

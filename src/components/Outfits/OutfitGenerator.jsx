@@ -171,7 +171,7 @@ export default function OutfitGenerator({ user }) {
                                 <div className="weather-location">{weather.location}</div>
                             </div>
                             <button onClick={getWeather} className="btn btn-ghost btn-icon">
-                                🔄
+                                <i className='bx bx-rotate-ccw'></i>
                             </button>
                         </div>
                     ) : (
@@ -180,7 +180,7 @@ export default function OutfitGenerator({ user }) {
                             className="btn btn-secondary w-full"
                             disabled={loadingWeather}
                         >
-                            {loadingWeather ? <LoadingSpinner size="sm" /> : '🌤️ Get Current Weather'}
+                            {loadingWeather ? <LoadingSpinner size="sm" /> : <><i className='bx bx-sun'></i> Get Current Weather</>}
                         </button>
                     )}
                 </div>
@@ -231,7 +231,7 @@ export default function OutfitGenerator({ user }) {
                 className="btn btn-primary w-full generate-btn"
                 disabled={loading}
             >
-                {loading ? <LoadingSpinner size="sm" message="Creating outfit..." /> : '✨ Generate Outfit'}
+                {loading ? <LoadingSpinner size="sm" message="Creating outfit..." /> : <><i className='bx bx-sparkles'></i> Generate Outfit</>}
             </button>
 
             {error && <ErrorMessage message={error} onRetry={handleGenerate} />}
@@ -250,7 +250,7 @@ export default function OutfitGenerator({ user }) {
                             ) : generatedImage ? (
                                 <div className="generated-image-container">
                                     <img src={generatedImage} alt="AI Generated Outfit Visualization" className="generated-image" />
-                                    <div className="image-badge">✨ AI Generated</div>
+                                    <div className="image-badge"><i className='bx bx-sparkles'></i> AI Generated</div>
                                 </div>
                             ) : null}
                         </div>

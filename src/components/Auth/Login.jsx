@@ -112,7 +112,7 @@ export default function Login() {
                 </div>
 
                 <button onClick={handleGoogleSignIn} className="btn btn-secondary w-full" disabled={loading}>
-                    <span>🔐</span>
+                    <i className='bx bxl-google' style={{ fontSize: '1.2rem', marginRight: '8px' }}></i>
                     Continue with Google
                 </button>
 

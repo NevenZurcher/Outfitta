@@ -5,17 +5,17 @@ export default function Navigation() {
     return (
         <nav className="bottom-nav">
             <NavLink to="/wardrobe" className="nav-item">
-                <span className="nav-icon">👔</span>
+                <i className='bx bx-hanger nav-icon'></i>
                 <span className="nav-label">Wardrobe</span>
             </NavLink>
 
             <NavLink to="/generate" className="nav-item">
-                <span className="nav-icon">✨</span>
+                <i className='bx bx-sparkles nav-icon'></i>
                 <span className="nav-label">Generate</span>
             </NavLink>
 
             <NavLink to="/history" className="nav-item">
-                <span className="nav-icon">📋</span>
+                <i className='bx bx-history nav-icon'></i>
                 <span className="nav-label">History</span>
             </NavLink>
         </nav>

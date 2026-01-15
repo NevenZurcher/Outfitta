@@ -85,7 +85,7 @@ export default function WardrobeView({ user }) {
                     <p>{items.length} items</p>
                 </div>
                 <button onClick={handleSignOut} className="btn btn-ghost btn-icon" title="Sign Out">
-                    🚪
+                    <i className='bx bx-arrow-out-left-square-half'></i>
                 </button>
             </header>
 
@@ -96,7 +96,7 @@ export default function WardrobeView({ user }) {
                         onClick={() => setFilter(cat)}
                         className={`filter-btn ${filter === cat ? 'active' : ''}`}
                     >
-                        {cat === 'favorites' ? '⭐ Favorites' : cat}
+                        {cat === 'favorites' ? <><i className='bx bx-star'></i> Favorites</> : cat}
                     </button>
                 ))}
             </div>
@@ -105,7 +105,7 @@ export default function WardrobeView({ user }) {
 
             {filteredItems.length === 0 && !error && (
                 <div className="empty-state">
-                    <div className="empty-icon">👔</div>
+                    <div className="empty-icon"><i className='bx bx-hanger'></i></div>
                     <h3>No items yet</h3>
                     <p>Add your first clothing item to get started!</p>
                 </div>

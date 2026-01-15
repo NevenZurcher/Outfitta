@@ -1,3 +1,9 @@
+/* Filled star for favorites */
+.favorite-filled {
+    color: var(--primary);
+    font-weight: 900;
+}
+
 .history-container {
     padding: var(--spacing-lg);
     max-width: 800px;

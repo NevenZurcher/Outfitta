@@ -43,12 +43,16 @@
 
 .filter-btn {
     padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border);
-    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--text-secondary);
     border-radius: var(--radius-full);
     font-size: 0.875rem;
-    font-weight: 600;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.02em;
     text-transform: capitalize;
     cursor: pointer;
     transition: all var(--transition-base);
@@ -103,9 +107,12 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: var(--primary);
+    /* Use solid primary for max opacity */
+    background-image: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
-    border: none;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    /* Subtle border for definition */
     font-size: 2rem;
     font-weight: 300;
     cursor: pointer;

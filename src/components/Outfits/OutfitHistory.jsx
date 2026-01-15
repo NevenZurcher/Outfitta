@@ -62,7 +62,7 @@ export default function OutfitHistory({ user }) {
                     onClick={() => setFilter('favorites')}
                     className={`filter-btn ${filter === 'favorites' ? 'active' : ''}`}
                 >
-                    ⭐ Favorites
+                    <i className='bx bx-star'></i> Favorites
                 </button>
             </div>
 
@@ -92,7 +92,7 @@ export default function OutfitHistory({ user }) {
                                 onClick={() => toggleFavorite(outfit.id, outfit.favorite)}
                                 className="favorite-btn"
                             >
-                                {outfit.favorite ? '⭐' : '☆'}
+                                <i className={`bx bx-star ${outfit.favorite ? 'favorite-filled' : ''}`}></i>
                             </button>
                         </div>
 

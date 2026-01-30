@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 export const geminiService = {
-    // Analyze clothing item from image
+    // Analyze clothing item(s) from image - can detect multiple items
     async analyzeClothing(imageFile) {
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -11,16 +11,28 @@ export const geminiService = {
             // Convert image to base64
             const base64Image = await fileToBase64(imageFile);
 
-            const prompt = `Analyze this clothing item and provide a JSON response with the following information:
-      {
-        "category": "one of: top, bottom, shoes, outerwear, accessory, dress, suit",
-        "colors": ["primary color", "secondary color if any"],
-        "season": ["spring", "summer", "fall", "winter"],
-        "style": ["casual", "formal", "sporty", "elegant", etc.],
-        "description": "brief description of the item"
-      }
-      
-      Only respond with valid JSON, no additional text.`;
+            const prompt = `Analyze this image and detect ALL individual clothing items visible.
+
+For EACH distinct clothing item found, provide:
+{
+  "items": [
+    {
+      "category": "one of: top, bottom, shoes, outerwear, accessory, dress, suit",
+      "colors": ["primary color", "secondary color if any"],
+      "season": ["spring", "summer", "fall", "winter"],
+      "style": ["casual", "formal", "sporty", "elegant", etc.],
+      "description": "brief description of the item",
+      "confidence": 0.95
+    }
+  ]
+}
+
+Rules:
+- Detect ALL items, even if worn together in an outfit
+- Each item should be a separate object in the array
+- If only one item is visible, return an array with one object
+- Set confidence (0-1) based on visibility and clarity
+- Only respond with valid JSON, no additional text`;
 
             const result = await model.generateContent([
                 prompt,
@@ -38,7 +50,9 @@ export const geminiService = {
             // Parse JSON from response
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                return JSON.parse(jsonMatch[0]);
+                const parsed = JSON.parse(jsonMatch[0]);
+                // Ensure we always return an array
+                return parsed.items || [parsed];
             }
 
             throw new Error('Failed to parse AI response');
@@ -53,10 +67,10 @@ export const geminiService = {
         try {
             const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-            const { weather, occasion, anchorItem, style } = constraints;
+            const { weather, occasion, anchorItem, style, userPreferences } = constraints;
 
             const wardrobeDescription = wardrobeItems.map(item =>
-                `${item.category}: ${item.description} (${item.colors.join(', ')})`
+                `${item.category}: ${item.description} (${item.colors.join(', ')})${item.favorite ? ' [FAVORITE]' : ''}`
             ).join('\n');
 
             let prompt = `You are a professional fashion stylist. Based on the following wardrobe items, suggest a complete outfit.
@@ -77,6 +91,35 @@ Constraints:`;
             }
             if (style) {
                 prompt += `\n- Style preference: ${style}`;
+            }
+
+            // Add learned preferences from ratings
+            if (userPreferences) {
+                prompt += `\n\nUser Preferences (learned from ${userPreferences.totalRatings || 0} rated outfits):`;
+
+                if (userPreferences.topItems && userPreferences.topItems.length > 0) {
+                    const topItemsDesc = userPreferences.topItems
+                        .map(item => `${item.description} (${item.avgRating.toFixed(1)}★)`)
+                        .join(', ');
+                    prompt += `\n- Highly rated items: ${topItemsDesc}`;
+                    prompt += `\n  → STRONGLY PREFER these items in the outfit`;
+                }
+
+                if (userPreferences.topColorCombos && userPreferences.topColorCombos.length > 0) {
+                    const colorCombos = userPreferences.topColorCombos
+                        .map(combo => `${combo.colors} (${combo.avgRating.toFixed(1)}★)`)
+                        .join(', ');
+                    prompt += `\n- Successful color combinations: ${colorCombos}`;
+                    prompt += `\n  → Try to use these color pairings`;
+                }
+
+                if (userPreferences.lowRatedItems && userPreferences.lowRatedItems.length > 0) {
+                    const lowItemsDesc = userPreferences.lowRatedItems
+                        .map(item => `${item.description} (${item.avgRating.toFixed(1)}★)`)
+                        .join(', ');
+                    prompt += `\n- Items to avoid: ${lowItemsDesc}`;
+                    prompt += `\n  → AVOID using these items unless absolutely necessary`;
+                }
             }
 
             prompt += `\n\nProvide a JSON response with:

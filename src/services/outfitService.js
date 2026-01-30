@@ -7,6 +7,7 @@ import {
     where,
     orderBy,
     updateDoc,
+    deleteDoc,
     doc
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -18,24 +19,116 @@ export const outfitService = {
         try {
             const outfitSuggestion = await geminiService.generateOutfit(wardrobeItems, constraints);
 
+            // Match AI suggestions to actual wardrobe items
+            const selectedItems = this.matchOutfitItems(outfitSuggestion.outfit, wardrobeItems, constraints.anchorItem);
+
             // Save outfit to history
             const outfitData = {
                 userId,
                 items: wardrobeItems.map(item => item.id),
+                selectedItems: selectedItems.map(item => ({
+                    id: item.id,
+                    imageUrl: item.imageUrl,
+                    description: item.description,
+                    category: item.category,
+                    colors: item.colors || []
+                })),
                 occasion: constraints.occasion || '',
                 weather: constraints.weather || null,
                 aiSuggestion: outfitSuggestion,
                 imageUrl: null, // Will be updated after image generation
                 favorite: false,
+                rating: null,        // NEW: 1-5 stars or null
+                ratedAt: null,       // NEW: timestamp when rated
+                wornAt: null,        // NEW: when user wore this outfit
                 createdAt: new Date()
             };
 
             const docRef = await addDoc(collection(db, 'outfits'), outfitData);
-            return { success: true, id: docRef.id, outfit: outfitSuggestion };
+            return { success: true, id: docRef.id, outfit: outfitSuggestion, selectedItems };
         } catch (error) {
             console.error('Error generating outfit:', error);
             return { success: false, error: error.message };
         }
+    },
+
+    // Match AI outfit suggestions to actual wardrobe items
+    matchOutfitItems(outfitSuggestion, wardrobeItems, anchorItem) {
+        const matched = [];
+
+        // Helper function to find best match for a category
+        const findBestMatch = (category, aiDescription) => {
+            const categoryItems = wardrobeItems.filter(item => item.category === category);
+
+            if (categoryItems.length === 0) return null;
+
+            // If anchor item matches this category, use it
+            if (anchorItem && anchorItem.category === category) {
+                return anchorItem;
+            }
+
+            // If we have AI description, try to match by keywords
+            if (aiDescription) {
+                const keywords = aiDescription.toLowerCase().split(' ');
+
+                // Score each item based on description and color matches
+                const scoredItems = categoryItems.map(item => {
+                    let score = 0;
+                    const itemDesc = (item.description || '').toLowerCase();
+                    const itemColors = (item.colors || []).map(c => c.toLowerCase());
+
+                    // Check description keywords
+                    keywords.forEach(keyword => {
+                        if (itemDesc.includes(keyword)) score += 2;
+                        if (itemColors.some(color => color.includes(keyword) || keyword.includes(color))) score += 3;
+                    });
+
+                    // Boost favorites
+                    if (item.favorite) score += 1;
+
+                    return { item, score };
+                });
+
+                // Sort by score and return best match
+                scoredItems.sort((a, b) => b.score - a.score);
+                if (scoredItems[0].score > 0) {
+                    return scoredItems[0].item;
+                }
+            }
+
+            // Fallback: return favorite or first item
+            return categoryItems.find(item => item.favorite) || categoryItems[0];
+        };
+
+        // Match each category from AI suggestion
+        if (outfitSuggestion.top) {
+            const match = findBestMatch('top', outfitSuggestion.top);
+            if (match) matched.push(match);
+        }
+
+        if (outfitSuggestion.bottom) {
+            const match = findBestMatch('bottom', outfitSuggestion.bottom);
+            if (match) matched.push(match);
+        }
+
+        if (outfitSuggestion.shoes) {
+            const match = findBestMatch('shoes', outfitSuggestion.shoes);
+            if (match) matched.push(match);
+        }
+
+        if (outfitSuggestion.outerwear) {
+            const match = findBestMatch('outerwear', outfitSuggestion.outerwear);
+            if (match) matched.push(match);
+        }
+
+        // Handle accessories (can be multiple)
+        if (outfitSuggestion.accessories && outfitSuggestion.accessories.length > 0) {
+            const accessoryItems = wardrobeItems.filter(item => item.category === 'accessory');
+            // Add up to 2 accessories
+            matched.push(...accessoryItems.slice(0, Math.min(2, outfitSuggestion.accessories.length)));
+        }
+
+        return matched;
     },
 
     // Get outfit history
@@ -118,6 +211,39 @@ export const outfitService = {
             return { success: true };
         } catch (error) {
             console.error('Error updating outfit image:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    // Rate an outfit
+    async rateOutfit(outfitId, rating, wornAt = null) {
+        try {
+            const outfitRef = doc(db, 'outfits', outfitId);
+            const updates = {
+                rating,
+                ratedAt: new Date()
+            };
+
+            if (wornAt) {
+                updates.wornAt = wornAt;
+            }
+
+            await updateDoc(outfitRef, updates);
+            return { success: true };
+        } catch (error) {
+            console.error('Error rating outfit:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    // Delete an outfit
+    async deleteOutfit(outfitId) {
+        try {
+            const outfitRef = doc(db, 'outfits', outfitId);
+            await deleteDoc(outfitRef);
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting outfit:', error);
             return { success: false, error: error.message };
         }
     }

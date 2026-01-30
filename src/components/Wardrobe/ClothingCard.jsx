@@ -1,6 +1,6 @@
 import './ClothingCard.css';
 
-export default function ClothingCard({ item, onDelete, onSelect, selected, onToggleFavorite, onGenerateWithItem }) {
+export default function ClothingCard({ item, onDelete, onSelect, selected, onToggleFavorite, onGenerateWithItem, onViewDetails, onToggleLaundry }) {
     const categoryIcons = {
         top: 'bx bx-t-shirt',
         bottom: 'bx bx-pant',
@@ -11,13 +11,28 @@ export default function ClothingCard({ item, onDelete, onSelect, selected, onTog
         accessory: 'bx bx-shopping-bag'
     };
 
+    const handleCardClick = () => {
+        if (onViewDetails) {
+            onViewDetails();
+        } else if (onSelect) {
+            onSelect();
+        }
+    };
+
     return (
         <div
             className={`clothing-card ${selected ? 'selected' : ''}`}
-            onClick={onSelect}
+            onClick={handleCardClick}
         >
             <div className="card-image-container">
                 <img src={item.imageUrl} alt={item.description} className="card-image" />
+                {item.inLaundry && (
+                    <div className="laundry-overlay">
+                        <span className="laundry-badge">
+                            <i className='bx bx-basket'></i> In Laundry
+                        </span>
+                    </div>
+                )}
                 <div className={`card-actions ${item.favorite ? 'has-favorite' : ''}`}>
                     {onToggleFavorite && (
                         <div className={`favorite-btn-container ${item.favorite ? 'is-favorite' : ''}`}>
@@ -30,11 +45,9 @@ export default function ClothingCard({ item, onDelete, onSelect, selected, onTog
                                 title={item.favorite ? "Remove from favorites" : "Add to favorites"}
                             >
                                 {item.favorite ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                                    </svg>
+                                    <i className='bx bxs-heart'></i>
                                 ) : (
-                                    <i className='bx bx-star'></i>
+                                    <i className='bx bx-heart'></i>
                                 )}
                             </button>
                         </div>
@@ -50,6 +63,20 @@ export default function ClothingCard({ item, onDelete, onSelect, selected, onTog
                                 title="Delete item"
                             >
                                 <i className='bx bx-trash'></i>
+                            </button>
+                        </div>
+                    )}
+                    {onToggleLaundry && (
+                        <div className="card-actions-left" style={{ left: onDelete ? '3.5rem' : '0.5rem' }}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onToggleLaundry();
+                                }}
+                                className={`action-btn laundry-btn ${item.inLaundry ? 'laundry-active' : ''}`}
+                                title={item.inLaundry ? "Mark as clean" : "Add to laundry"}
+                            >
+                                <i className='bx bx-basket'></i>
                             </button>
                         </div>
                     )}

@@ -67,18 +67,65 @@
     color: var(--text-tertiary);
 }
 
-.favorite-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: transform var(--transition-fast);
-    padding: var(--spacing-xs);
+/* Scope these styles to history cards only */
+.history-card .card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 
-.favorite-btn:hover {
-    transform: scale(1.2);
+.history-card .delete-btn {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--text-primary);
+    font-size: 1.25rem;
 }
+
+.history-card .delete-btn:hover {
+    transform: scale(1.1);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.history-card .favorite-btn {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}
+
+.history-card .favorite-btn:hover {
+    transform: scale(1.1);
+    background: var(--primary-glow);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.history-card .favorite-filled {
+    color: var(--primary);
+}
+
 
 .outfit-image-preview {
     margin: var(--spacing-md) 0;
@@ -133,4 +180,21 @@
 
 .outfit-reasoning strong {
     color: var(--text-secondary);
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Align to right */
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border);
+}
+
+.rating-prompt {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 600;
 }

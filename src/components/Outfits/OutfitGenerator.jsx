@@ -4,7 +4,9 @@ import { wardrobeService } from '../../services/wardrobeService';
 import { outfitService } from '../../services/outfitService';
 import { weatherService } from '../../services/weatherService';
 import { geminiService } from '../../services/geminiService';
+import { preferencesService } from '../../services/preferencesService';
 import ClothingCard from '../Wardrobe/ClothingCard';
+import OutfitCollage from './OutfitCollage';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
 import './OutfitGenerator.css';
@@ -17,6 +19,7 @@ export default function OutfitGenerator({ user }) {
     const [loading, setLoading] = useState(false);
     const [loadingWeather, setLoadingWeather] = useState(false);
     const [generatedOutfit, setGeneratedOutfit] = useState(null);
+    const [outfitSelectedItems, setOutfitSelectedItems] = useState([]);
     const [generatedImage, setGeneratedImage] = useState(null);
     const [generatingImage, setGeneratingImage] = useState(false);
     const [currentOutfitId, setCurrentOutfitId] = useState(null);
@@ -75,37 +78,71 @@ export default function OutfitGenerator({ user }) {
     };
 
     const handleGenerate = async () => {
-        if (wardrobeItems.length === 0) {
-            setError('Add some items to your wardrobe first!');
+        // Filter out items in laundry
+        const availableItems = wardrobeItems.filter(item => !item.inLaundry);
+
+        if (availableItems.length === 0) {
+            setError('No clean items available! Please mark some items as clean.');
             return;
         }
 
         setLoading(true);
         setError('');
         setGeneratedOutfit(null);
+        setOutfitSelectedItems([]);
         setGeneratedImage(null);
 
         try {
+            // Fetch user preferences for AI learning
+            const prefsResult = await preferencesService.getPreferences(user.uid);
+            const topItemsResult = await preferencesService.getTopRatedItems(user.uid, 5);
+            const topColorsResult = await preferencesService.getTopColorCombinations(user.uid, 3);
+            const lowItemsResult = await preferencesService.getLowRatedItems(user.uid, 3);
+
+            // Build user preferences object for AI
+            const userPreferences = {
+                totalRatings: prefsResult.success ? Object.keys(prefsResult.preferences.itemPreferences || {}).length : 0,
+                topItems: topItemsResult.success ? topItemsResult.items.map(item => {
+                    // Find the actual wardrobe item to get description
+                    const wardrobeItem = availableItems.find(wi => wi.id === item.id);
+                    return {
+                        ...item,
+                        description: wardrobeItem?.description || 'Unknown item'
+                    };
+                }) : [],
+                topColorCombos: topColorsResult.success ? topColorsResult.combinations : [],
+                lowRatedItems: lowItemsResult.success ? lowItemsResult.items.map(item => {
+                    const wardrobeItem = availableItems.find(wi => wi.id === item.id);
+                    return {
+                        ...item,
+                        description: wardrobeItem?.description || 'Unknown item'
+                    };
+                }) : []
+            };
+
             const constraints = {
                 weather,
                 occasion,
-                anchorItem: selectedItems.length > 0 ? selectedItems[0] : null
+                anchorItem: selectedItems.length > 0 ? selectedItems[0] : null,
+                userPreferences  // NEW: Pass learned preferences to AI
             };
 
             const result = await outfitService.generateOutfit(
                 user.uid,
-                wardrobeItems,
+                availableItems,  // Use filtered items
                 constraints
             );
 
             if (result.success) {
                 setGeneratedOutfit(result.outfit);
+                setOutfitSelectedItems(result.selectedItems || []);
                 setCurrentOutfitId(result.id); // Save outfit ID for later image update
 
-                // Generate visual representation if visualPrompt exists
-                if (result.outfit.visualPrompt) {
-                    generateVisual(result.outfit.visualPrompt, result.id);
-                }
+                // TEMPORARILY DISABLED: Generate visual representation if visualPrompt exists
+                // Uncomment to re-enable image generation (will use API credits)
+                // if (result.outfit.visualPrompt) {
+                //     generateVisual(result.outfit.visualPrompt, result.id);
+                // }
             } else {
                 setError(result.error);
             }
@@ -226,6 +263,21 @@ export default function OutfitGenerator({ user }) {
                 </div>
             </div>
 
+            {/* Item availability counter */}
+            {wardrobeItems.length > 0 && (
+                <div className="availability-info">
+                    <i className='bx bx-closet'></i>
+                    <span>
+                        {wardrobeItems.filter(item => !item.inLaundry).length} clean items available
+                        {wardrobeItems.filter(item => item.inLaundry).length > 0 && (
+                            <span className="laundry-count">
+                                ({wardrobeItems.filter(item => item.inLaundry).length} in laundry)
+                            </span>
+                        )}
+                    </span>
+                </div>
+            )}
+
             <button
                 onClick={handleGenerate}
                 className="btn btn-primary w-full generate-btn"
@@ -239,6 +291,9 @@ export default function OutfitGenerator({ user }) {
             {generatedOutfit && (
                 <div className="outfit-result card-glass animate-fade-in">
                     <h2>Your Outfit</h2>
+
+                    {/* Display collage of selected items */}
+                    <OutfitCollage selectedItems={outfitSelectedItems} />
 
                     {(generatingImage || generatedImage) && (
                         <div className="outfit-visualization">

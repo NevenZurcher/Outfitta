@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { wardrobeService } from '../../services/wardrobeService';
 import { authService } from '../../services/authService';
 import ClothingCard from './ClothingCard';
+import ClothingDetailModal from './ClothingDetailModal';
 import AddClothingItem from './AddClothingItem';
+import BulkUploadModal from './BulkUploadModal';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
 import './WardrobeView.css';
@@ -13,11 +15,26 @@ export default function WardrobeView({ user }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
     const [filter, setFilter] = useState('all');
+    const [showUploadMenu, setShowUploadMenu] = useState(false);
 
     useEffect(() => {
         loadWardrobe();
     }, [user]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (showUploadMenu && !e.target.closest('.fab-container')) {
+                setShowUploadMenu(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showUploadMenu]);
 
     const loadWardrobe = async () => {
         setLoading(true);
@@ -37,9 +54,16 @@ export default function WardrobeView({ user }) {
 
     const handleDelete = async (itemId, imagePath) => {
         if (confirm('Are you sure you want to delete this item?')) {
+            // Optimistically remove from UI immediately
+            setItems(prevItems => prevItems.filter(item => item.id !== itemId));
+
             const result = await wardrobeService.deleteItem(itemId, imagePath);
-            if (result.success) {
-                loadWardrobe();
+
+            // If API call fails, revert the change (optional, but good practice)
+            if (!result.success) {
+                console.error('Failed to delete item, reverting UI');
+                loadWardrobe(); // Reload to restore state
+                alert('Failed to delete item: ' + result.error);
             }
         }
     };
@@ -61,13 +85,45 @@ export default function WardrobeView({ user }) {
         navigate('/generate', { state: { anchorItem: item } });
     };
 
+    const handleViewDetails = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handleUpdateDescription = async (itemId, newDescription) => {
+        const result = await wardrobeService.updateItem(itemId, { description: newDescription });
+        if (result.success) {
+            loadWardrobe();
+            // Update the selected item to reflect changes
+            setSelectedItem(prev => prev ? { ...prev, description: newDescription } : null);
+            return true;
+        }
+        return false;
+    };
+
+    const handleCloseDetailModal = () => {
+        setShowDetailModal(false);
+        setSelectedItem(null);
+    };
+
+    const handleToggleLaundry = async (itemId, currentStatus) => {
+        const result = await wardrobeService.toggleLaundry(itemId, currentStatus);
+        if (result.success) {
+            loadWardrobe();
+        }
+    };
+
     const filteredItems = filter === 'all'
         ? items
         : filter === 'favorites'
             ? items.filter(item => item.favorite)
-            : items.filter(item => item.category === filter);
+            : filter === 'clean'
+                ? items.filter(item => !item.inLaundry)
+                : filter === 'laundry'
+                    ? items.filter(item => item.inLaundry)
+                    : items.filter(item => item.category === filter);
 
-    const categories = ['all', 'favorites', 'top', 'bottom', 'shoes', 'outerwear', 'dress', 'accessory'];
+    const categories = ['all', 'clean', 'laundry', 'favorites', 'top', 'bottom', 'shoes', 'outerwear', 'dress', 'accessory'];
 
     if (loading) {
         return (
@@ -96,7 +152,10 @@ export default function WardrobeView({ user }) {
                         onClick={() => setFilter(cat)}
                         className={`filter-btn ${filter === cat ? 'active' : ''}`}
                     >
-                        {cat === 'favorites' ? <><i className='bx bx-star'></i> Favorites</> : cat}
+                        {cat === 'favorites' ? <><i className='bx bx-heart'></i> Favorites</> :
+                            cat === 'clean' ? <><i className='bx bx-check-circle'></i> Clean</> :
+                                cat === 'laundry' ? <><i className='bx bx-basket'></i> In Laundry</> :
+                                    cat}
                     </button>
                 ))}
             </div>
@@ -119,17 +178,45 @@ export default function WardrobeView({ user }) {
                         onDelete={() => handleDelete(item.id, item.imagePath)}
                         onToggleFavorite={() => handleToggleFavorite(item.id, item.favorite)}
                         onGenerateWithItem={() => handleGenerateWithItem(item)}
+                        onViewDetails={() => handleViewDetails(item)}
+                        onToggleLaundry={() => handleToggleLaundry(item.id, item.inLaundry)}
                     />
                 ))}
             </div>
 
-            <button
-                onClick={() => setShowAddModal(true)}
-                className="fab"
-                title="Add clothing item"
-            >
-                +
-            </button>
+            <div className="fab-container">
+                {showUploadMenu && (
+                    <div className="fab-menu">
+                        <button
+                            className="fab-menu-item"
+                            onClick={() => {
+                                setShowAddModal(true);
+                                setShowUploadMenu(false);
+                            }}
+                        >
+                            <i className='bx bx-plus'></i>
+                            <span>Single Upload</span>
+                        </button>
+                        <button
+                            className="fab-menu-item"
+                            onClick={() => {
+                                setShowBulkUploadModal(true);
+                                setShowUploadMenu(false);
+                            }}
+                        >
+                            <i className='bx bx-upload'></i>
+                            <span>Bulk Upload</span>
+                        </button>
+                    </div>
+                )}
+                <button
+                    onClick={() => setShowUploadMenu(!showUploadMenu)}
+                    className={`fab ${showUploadMenu ? 'active' : ''}`}
+                    title="Add clothing item"
+                >
+                    {showUploadMenu ? '✕' : '+'}
+                </button>
+            </div>
 
             {showAddModal && (
                 <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
@@ -143,6 +230,24 @@ export default function WardrobeView({ user }) {
                         <AddClothingItem userId={user.uid} onSuccess={handleItemAdded} />
                     </div>
                 </div>
+            )}
+
+            {showDetailModal && selectedItem && (
+                <ClothingDetailModal
+                    item={selectedItem}
+                    onClose={handleCloseDetailModal}
+                    onUpdate={handleUpdateDescription}
+                    onDelete={handleDelete}
+                    onToggleLaundry={handleToggleLaundry}
+                />
+            )}
+
+            {showBulkUploadModal && (
+                <BulkUploadModal
+                    user={user}
+                    onClose={() => setShowBulkUploadModal(false)}
+                    onSuccess={loadWardrobe}
+                />
             )}
         </div>
     );

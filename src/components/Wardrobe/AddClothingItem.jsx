@@ -35,6 +35,10 @@ export default function AddClothingItem({ userId, onSuccess }) {
         try {
             const result = await wardrobeService.addItem(userId, imageFile);
             if (result.success) {
+                // Show notification if multiple items were detected
+                if (result.detectedCount > 1) {
+                    alert(`✨ Detected ${result.detectedCount} items in this image! Only the first item was added. Use "Bulk Upload" to add all items at once.`);
+                }
                 onSuccess();
             } else {
                 setError(result.error);

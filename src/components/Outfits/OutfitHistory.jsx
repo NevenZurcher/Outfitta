@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { outfitService } from '../../services/outfitService';
+import { preferencesService } from '../../services/preferencesService';
+import OutfitCollage from './OutfitCollage';
+import StarRating from '../Common/StarRating';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
 import './OutfitHistory.css';
@@ -32,9 +35,45 @@ export default function OutfitHistory({ user }) {
         }
     };
 
-    const filteredOutfits = filter === 'favorites'
-        ? outfits.filter(outfit => outfit.favorite)
-        : outfits;
+    const handleRating = async (outfitId, rating) => {
+        // Update outfit rating
+        const result = await outfitService.rateOutfit(outfitId, rating);
+        if (result.success) {
+            // Find the outfit to get its data
+            const outfit = outfits.find(o => o.id === outfitId);
+            if (outfit) {
+                // Update user preferences based on rating
+                await preferencesService.updatePreferences(user.uid, outfit, rating);
+            }
+            // Reload to show updated rating
+            loadHistory();
+        }
+    };
+
+    const handleDelete = async (outfitId) => {
+        if (confirm('Are you sure you want to delete this outfit? This action cannot be undone.')) {
+            // Optimistically remove from UI
+            setOutfits(prevOutfits => prevOutfits.filter(o => o.id !== outfitId));
+
+            const result = await outfitService.deleteOutfit(outfitId);
+
+            if (!result.success) {
+                console.error('Failed to delete outfit, reverting UI');
+                loadHistory(); // Reload to restore state
+                alert('Failed to delete outfit: ' + result.error);
+            }
+        }
+    };
+
+    const filteredOutfits = filter === 'all'
+        ? outfits
+        : filter === 'favorites'
+            ? outfits.filter(outfit => outfit.favorite)
+            : filter === 'rated'
+                ? outfits.filter(outfit => outfit.rating)
+                : filter === 'unrated'
+                    ? outfits.filter(outfit => !outfit.rating)
+                    : outfits;
 
     if (loading) {
         return (
@@ -62,7 +101,19 @@ export default function OutfitHistory({ user }) {
                     onClick={() => setFilter('favorites')}
                     className={`filter-btn ${filter === 'favorites' ? 'active' : ''}`}
                 >
-                    <i className='bx bx-star'></i> Favorites
+                    <i className='bx bx-heart'></i> Favorites
+                </button>
+                <button
+                    onClick={() => setFilter('rated')}
+                    className={`filter-btn ${filter === 'rated' ? 'active' : ''}`}
+                >
+                    <i className='bx bxs-star'></i> Rated
+                </button>
+                <button
+                    onClick={() => setFilter('unrated')}
+                    className={`filter-btn ${filter === 'unrated' ? 'active' : ''}`}
+                >
+                    <i className='bx bx-star-half'></i> Unrated
                 </button>
             </div>
 
@@ -88,13 +139,28 @@ export default function OutfitHistory({ user }) {
                                     {outfit.createdAt?.toDate?.()?.toLocaleDateString() || 'Recent'}
                                 </div>
                             </div>
-                            <button
-                                onClick={() => toggleFavorite(outfit.id, outfit.favorite)}
-                                className="favorite-btn"
-                            >
-                                <i className={`bx bx-star ${outfit.favorite ? 'favorite-filled' : ''}`}></i>
-                            </button>
+                            <div className="card-actions">
+                                <button
+                                    onClick={() => handleDelete(outfit.id)}
+                                    className="delete-btn"
+                                    title="Delete outfit"
+                                >
+                                    <i className='bx bx-trash'></i>
+                                </button>
+                                <button
+                                    onClick={() => toggleFavorite(outfit.id, outfit.favorite)}
+                                    className="favorite-btn"
+                                    title={outfit.favorite ? "Remove from favorites" : "Add to favorites"}
+                                >
+                                    <i className={`bx ${outfit.favorite ? 'bxs-heart favorite-filled' : 'bx-heart'}`}></i>
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Display collage of selected items */}
+                        {outfit.selectedItems && outfit.selectedItems.length > 0 && (
+                            <OutfitCollage selectedItems={outfit.selectedItems} />
+                        )}
 
                         {outfit.imageUrl && (
                             <div className="outfit-image-preview">
@@ -136,6 +202,15 @@ export default function OutfitHistory({ user }) {
                                 <strong>Why it works:</strong> {outfit.aiSuggestion.reasoning}
                             </div>
                         )}
+
+                        <div className="card-footer">
+                            <span className="rating-prompt">Rate this outfit:</span>
+                            <StarRating
+                                rating={outfit.rating}
+                                onRate={(rating) => handleRating(outfit.id, rating)}
+                                size="md"
+                            />
+                        </div>
                     </div>
                 ))}
             </div>

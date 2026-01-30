@@ -45,7 +45,7 @@
     transform: scale(1.05);
 }
 
-.card-actions {
+.clothing-card .card-actions {
     position: absolute;
     top: 0;
     left: 0;
@@ -66,18 +66,18 @@
 }
 
 /* Always show actions if favorite is active */
-.card-actions.has-favorite {
+.clothing-card .card-actions.has-favorite {
     opacity: 1;
 }
 
 /* But hide the delete button unless hovering */
-.card-actions.has-favorite .delete-btn {
+.clothing-card .card-actions.has-favorite .delete-btn {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
 }
 
-.card-actions.has-favorite:hover .delete-btn {
+.clothing-card .card-actions.has-favorite:hover .delete-btn {
     opacity: 1;
     pointer-events: auto;
 }
@@ -133,6 +133,55 @@
     background: var(--error);
 }
 
+.laundry-btn {
+    color: var(--text-secondary);
+}
+
+.laundry-btn.laundry-active {
+    color: #ff9800;
+    border-color: #ff9800;
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.laundry-btn:hover {
+    background: rgba(255, 152, 0, 0.2);
+    border-color: #ff9800;
+}
+
+/* Laundry overlay and badge */
+.laundry-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.laundry-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 152, 0, 0.9);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+}
+
+.laundry-badge i {
+    font-size: 1.1rem;
+}
+
+
 .card-content {
     padding: var(--spacing-md);
 }
@@ -164,6 +213,7 @@
     margin-bottom: var(--spacing-sm);
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -186,11 +236,11 @@
 
 /* Mobile Optimization: Actions always visible */
 @media (max-width: 1024px) {
-    .card-actions {
+    .clothing-card .card-actions {
         opacity: 1;
     }
 
-    .card-actions.has-favorite .delete-btn {
+    .clothing-card .card-actions.has-favorite .delete-btn {
         opacity: 1;
         pointer-events: auto;
     }

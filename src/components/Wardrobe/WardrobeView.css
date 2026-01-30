@@ -28,6 +28,13 @@
     font-size: 0.875rem;
 }
 
+.header-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+
 .filter-bar {
     display: flex;
     gap: var(--spacing-sm);
@@ -100,25 +107,79 @@
     margin-bottom: var(--spacing-sm);
 }
 
-.fab {
+.fab-container {
     position: fixed;
-    bottom: calc(80px + var(--spacing-lg));
-    right: var(--spacing-lg);
+    bottom: calc(100px + var(--spacing-lg));
+    right: calc(100px + var(--spacing-lg));
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-md);
+}
+
+.fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fab-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+}
+
+.fab-menu-item:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary);
+    transform: translateX(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.fab-menu-item i {
+    font-size: 1.25rem;
+}
+
+.fab {
     width: 60px;
     height: 60px;
     border-radius: 50%;
     background: var(--primary);
-    /* Use solid primary for max opacity */
     background-image: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.1);
-    /* Subtle border for definition */
     font-size: 2rem;
     font-weight: 300;
     cursor: pointer;
     box-shadow: var(--shadow-lg);
     transition: all var(--transition-base);
-    z-index: 50;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -129,8 +190,9 @@
     box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
-.fab:active {
-    transform: scale(0.95);
+.fab:active,
+.fab.active {
+    transform: scale(0.95) rotate(90deg);
 }
 
 .modal-header {

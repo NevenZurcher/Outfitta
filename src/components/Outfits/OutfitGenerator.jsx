@@ -44,7 +44,7 @@ export default function OutfitGenerator({ user }) {
     const loadWardrobe = async () => {
         const result = await wardrobeService.getItems(user.uid);
         if (result.success) {
-            // Sort items: favorites first, then by creation date
+            // Sort items: favorites first for anchor selection, then by creation date
             const sortedItems = result.items.sort((a, b) => {
                 if (a.favorite && !b.favorite) return -1;
                 if (!a.favorite && b.favorite) return 1;
@@ -93,11 +93,20 @@ export default function OutfitGenerator({ user }) {
         setGeneratedImage(null);
 
         try {
-            // Fetch user preferences for AI learning
-            const prefsResult = await preferencesService.getPreferences(user.uid);
-            const topItemsResult = await preferencesService.getTopRatedItems(user.uid, 5);
-            const topColorsResult = await preferencesService.getTopColorCombinations(user.uid, 3);
-            const lowItemsResult = await preferencesService.getLowRatedItems(user.uid, 3);
+            // Fetch user preferences for AI learning (with error handling)
+            let prefsResult = { success: false };
+            let topItemsResult = { success: false };
+            let topColorsResult = { success: false };
+            let lowItemsResult = { success: false };
+
+            try {
+                prefsResult = await preferencesService.getPreferences(user.uid);
+                topItemsResult = await preferencesService.getTopRatedItems(user.uid, 5);
+                topColorsResult = await preferencesService.getTopColorCombinations(user.uid, 3);
+                lowItemsResult = await preferencesService.getLowRatedItems(user.uid, 3);
+            } catch (prefError) {
+                console.warn('Could not fetch preferences, continuing without them:', prefError);
+            }
 
             // Build user preferences object for AI
             const userPreferences = {
@@ -120,11 +129,23 @@ export default function OutfitGenerator({ user }) {
                 }) : []
             };
 
+            // Fetch recent outfits to avoid duplicates
+            const recentOutfitsResult = await outfitService.getOutfitHistory(user.uid);
+            const recentOutfits = recentOutfitsResult.success
+                ? recentOutfitsResult.outfits.slice(0, 5).map(outfit => ({
+                    top: outfit.items.find(i => i.category === 'top')?.description,
+                    bottom: outfit.items.find(i => i.category === 'bottom')?.description,
+                    shoes: outfit.items.find(i => i.category === 'shoes')?.description,
+                    outerwear: outfit.items.find(i => i.category === 'outerwear')?.description
+                }))
+                : [];
+
             const constraints = {
                 weather,
                 occasion,
                 anchorItem: selectedItems.length > 0 ? selectedItems[0] : null,
-                userPreferences  // NEW: Pass learned preferences to AI
+                userPreferences,  // Pass learned preferences to AI
+                recentOutfits     // Pass recent outfits to avoid duplicates
             };
 
             const result = await outfitService.generateOutfit(
@@ -144,9 +165,11 @@ export default function OutfitGenerator({ user }) {
                 //     generateVisual(result.outfit.visualPrompt, result.id);
                 // }
             } else {
+                console.error('Outfit generation failed:', result.error);
                 setError(result.error);
             }
         } catch (err) {
+            console.error('Error in generateOutfit:', err);
             setError('Failed to generate outfit. Please try again.');
         } finally {
             setLoading(false);

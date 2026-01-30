@@ -70,7 +70,7 @@ Rules:
             const { weather, occasion, anchorItem, style, userPreferences } = constraints;
 
             const wardrobeDescription = wardrobeItems.map(item =>
-                `${item.category}: ${item.description} (${item.colors.join(', ')})${item.favorite ? ' [FAVORITE]' : ''}`
+                `${item.category}: ${item.description} (${item.colors.join(', ')})`
             ).join('\n');
 
             let prompt = `You are a professional fashion stylist. Based on the following wardrobe items, suggest a complete outfit.
@@ -102,7 +102,6 @@ Constraints:`;
                         .map(item => `${item.description} (${item.avgRating.toFixed(1)}★)`)
                         .join(', ');
                     prompt += `\n- Highly rated items: ${topItemsDesc}`;
-                    prompt += `\n  → STRONGLY PREFER these items in the outfit`;
                 }
 
                 if (userPreferences.topColorCombos && userPreferences.topColorCombos.length > 0) {
@@ -120,6 +119,22 @@ Constraints:`;
                     prompt += `\n- Items to avoid: ${lowItemsDesc}`;
                     prompt += `\n  → AVOID using these items unless absolutely necessary`;
                 }
+            }
+
+            // Add recent outfits to avoid duplicates
+            if (constraints.recentOutfits && constraints.recentOutfits.length > 0) {
+                const recentOutfitsDesc = constraints.recentOutfits
+                    .map(outfit => {
+                        const items = [];
+                        if (outfit.top) items.push(`Top: ${outfit.top}`);
+                        if (outfit.bottom) items.push(`Bottom: ${outfit.bottom}`);
+                        if (outfit.shoes) items.push(`Shoes: ${outfit.shoes}`);
+                        if (outfit.outerwear) items.push(`Outerwear: ${outfit.outerwear}`);
+                        return items.join(', ');
+                    })
+                    .join('\n');
+                prompt += `\n\nRecent outfits (avoid creating duplicates):\n${recentOutfitsDesc}`;
+                prompt += `\n→ Create a NEW outfit that is distinctly different from these recent combinations`;
             }
 
             prompt += `\n\nProvide a JSON response with:

@@ -5,6 +5,7 @@ import OutfitCollage from './OutfitCollage';
 import StarRating from '../Common/StarRating';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
+import Pagination from '../Common/Pagination';
 import './OutfitHistory.css';
 
 export default function OutfitHistory({ user }) {
@@ -12,6 +13,8 @@ export default function OutfitHistory({ user }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [filter, setFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const outfitsPerPage = 6;
 
     useEffect(() => {
         loadHistory();
@@ -75,6 +78,22 @@ export default function OutfitHistory({ user }) {
                     ? outfits.filter(outfit => !outfit.rating)
                     : outfits;
 
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
+    const startIndex = (currentPage - 1) * outfitsPerPage;
+    const endIndex = startIndex + outfitsPerPage;
+    const paginatedOutfits = filteredOutfits.slice(startIndex, endIndex);
+
+    // Reset to page 1 when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     if (loading) {
         return (
             <div className="history-loading">
@@ -87,7 +106,7 @@ export default function OutfitHistory({ user }) {
         <div className="history-container">
             <header className="history-header">
                 <h1 className="gradient-text">Outfit History</h1>
-                <p>{outfits.length} outfits generated</p>
+                <p>{outfits.length} outfits generated {filteredOutfits.length !== outfits.length && `(${filteredOutfits.length} filtered)`}</p>
             </header>
 
             <div className="filter-bar">
@@ -128,7 +147,7 @@ export default function OutfitHistory({ user }) {
             )}
 
             <div className="history-list">
-                {filteredOutfits.map(outfit => (
+                {paginatedOutfits.map(outfit => (
                     <div key={outfit.id} className="history-card card-glass">
                         <div className="card-header">
                             <div>
@@ -214,6 +233,12 @@ export default function OutfitHistory({ user }) {
                     </div>
                 ))}
             </div>
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 }

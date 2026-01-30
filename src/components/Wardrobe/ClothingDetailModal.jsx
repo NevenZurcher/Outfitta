@@ -5,6 +5,12 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
     const [isEditing, setIsEditing] = useState(false);
     const [editedDescription, setEditedDescription] = useState(item.description || '');
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditingCategory, setIsEditingCategory] = useState(false);
+    const [editedCategory, setEditedCategory] = useState(item.category || 'top');
+    const [isEditingColors, setIsEditingColors] = useState(false);
+    const [editedColors, setEditedColors] = useState(item.colors || []);
+    const [newColor, setNewColor] = useState('');
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     const categoryIcons = {
         top: 'bx bx-t-shirt',
@@ -60,6 +66,54 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
         setIsEditing(false);
     };
 
+    const handleSaveCategory = async () => {
+        setIsSaving(true);
+        const success = await onUpdate(item.id, { category: editedCategory });
+        setIsSaving(false);
+
+        if (success) {
+            setIsEditingCategory(false);
+        }
+    };
+
+    const handleCancelCategoryEdit = () => {
+        setEditedCategory(item.category || 'top');
+        setIsEditingCategory(false);
+    };
+
+    const handleSaveColors = async () => {
+        if (editedColors.length === 0) {
+            alert('Please add at least one color');
+            return;
+        }
+
+        setIsSaving(true);
+        const success = await onUpdate(item.id, { colors: editedColors });
+        setIsSaving(false);
+
+        if (success) {
+            setIsEditingColors(false);
+        }
+    };
+
+    const handleCancelColorsEdit = () => {
+        setEditedColors(item.colors || []);
+        setNewColor('');
+        setIsEditingColors(false);
+    };
+
+    const handleAddColor = () => {
+        const trimmedColor = newColor.trim();
+        if (trimmedColor && !editedColors.includes(trimmedColor)) {
+            setEditedColors([...editedColors, trimmedColor]);
+            setNewColor('');
+        }
+    };
+
+    const handleRemoveColor = (colorToRemove) => {
+        setEditedColors(editedColors.filter(c => c !== colorToRemove));
+    };
+
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this item?')) {
             await onDelete(item.id, item.imagePath);
@@ -76,14 +130,66 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
 
                 <div className="detail-modal-content">
                     <div className="detail-image-container">
-                        <img src={item.imageUrl} alt={item.description} className="detail-image" />
+                        {!imageLoaded && <div className="detail-image-skeleton"></div>}
+                        <img
+                            src={item.imageUrl}
+                            alt={item.description}
+                            className={`detail-image ${imageLoaded ? 'loaded' : ''}`}
+                            loading="lazy"
+                            onLoad={() => setImageLoaded(true)}
+                        />
                     </div>
 
                     <div className="detail-info">
                         <div className="detail-header">
                             <div className="detail-category">
-                                <i className={`${categoryIcons[item.category] || 'bx bx-hanger'} category-icon`}></i>
-                                <span className="category-name">{item.category}</span>
+                                {isEditingCategory ? (
+                                    <div className="edit-category-mode">
+                                        <select
+                                            value={editedCategory}
+                                            onChange={(e) => setEditedCategory(e.target.value)}
+                                            className="category-select"
+                                        >
+                                            <option value="top">Top</option>
+                                            <option value="bottom">Bottom</option>
+                                            <option value="shoes">Shoes</option>
+                                            <option value="outerwear">Outerwear</option>
+                                            <option value="dress">Dress</option>
+                                            <option value="suit">Suit</option>
+                                            <option value="accessory">Accessory</option>
+                                        </select>
+                                        <div className="edit-actions-inline">
+                                            <button
+                                                className="btn-icon-sm btn-primary-sm"
+                                                onClick={handleSaveCategory}
+                                                disabled={isSaving}
+                                                title="Save"
+                                            >
+                                                <i className='bx bx-check'></i>
+                                            </button>
+                                            <button
+                                                className="btn-icon-sm btn-ghost-sm"
+                                                onClick={handleCancelCategoryEdit}
+                                                disabled={isSaving}
+                                                title="Cancel"
+                                            >
+                                                <i className='bx bx-x'></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <i className={`${categoryIcons[item.category] || 'bx bx-hanger'} category-icon`}></i>
+                                        <span className="category-name">{item.category}</span>
+                                        <button
+                                            className="edit-btn-inline"
+                                            onClick={() => setIsEditingCategory(true)}
+                                            title="Edit category"
+                                        >
+                                            <i className='bx bx-pencil'></i>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                             {item.favorite && (
                                 <div className="favorite-badge">
@@ -147,18 +253,84 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
                             )}
                         </div>
 
-                        {item.colors && item.colors.length > 0 && (
+                        {(item.colors && item.colors.length > 0) || isEditingColors ? (
                             <div className="detail-section">
-                                <h3>Colors</h3>
-                                <div className="detail-colors">
-                                    {item.colors.map((color, idx) => (
-                                        <span key={idx} className="color-tag-large">{color}</span>
-                                    ))}
+                                <div className="section-header">
+                                    <h3>Colors</h3>
+                                    {!isEditingColors && (
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => setIsEditingColors(true)}
+                                            title="Edit colors"
+                                        >
+                                            <i className='bx bx-pencil'></i>
+                                        </button>
+                                    )}
                                 </div>
-                            </div>
-                        )}
 
-                        {item.season && item.season.length > 0 && (
+                                {isEditingColors ? (
+                                    <div className="edit-mode">
+                                        <div className="color-editor">
+                                            <div className="color-input-group">
+                                                <input
+                                                    type="text"
+                                                    value={newColor}
+                                                    onChange={(e) => setNewColor(e.target.value)}
+                                                    onKeyPress={(e) => e.key === 'Enter' && handleAddColor()}
+                                                    placeholder="Add a color..."
+                                                    className="color-input"
+                                                />
+                                                <button
+                                                    className="btn btn-secondary btn-sm"
+                                                    onClick={handleAddColor}
+                                                    disabled={!newColor.trim()}
+                                                >
+                                                    <i className='bx bx-plus'></i> Add
+                                                </button>
+                                            </div>
+                                            <div className="detail-colors">
+                                                {editedColors.map((color, idx) => (
+                                                    <span key={idx} className="color-tag-editable">
+                                                        {color}
+                                                        <button
+                                                            className="remove-color-btn"
+                                                            onClick={() => handleRemoveColor(color)}
+                                                            title="Remove color"
+                                                        >
+                                                            <i className='bx bx-x'></i>
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="edit-actions">
+                                            <button
+                                                className="btn btn-primary btn-sm"
+                                                onClick={handleSaveColors}
+                                                disabled={isSaving}
+                                            >
+                                                {isSaving ? 'Saving...' : 'Save'}
+                                            </button>
+                                            <button
+                                                className="btn btn-ghost btn-sm"
+                                                onClick={handleCancelColorsEdit}
+                                                disabled={isSaving}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="detail-colors">
+                                        {item.colors.map((color, idx) => (
+                                            <span key={idx} className="color-tag-large">{color}</span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
+
+                        {Array.isArray(item.season) && item.season.length > 0 && (
                             <div className="detail-section">
                                 <h3>Season</h3>
                                 <div className="detail-tags">
@@ -169,7 +341,7 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
                             </div>
                         )}
 
-                        {item.style && item.style.length > 0 && (
+                        {Array.isArray(item.style) && item.style.length > 0 && (
                             <div className="detail-section">
                                 <h3>Style</h3>
                                 <div className="detail-tags">

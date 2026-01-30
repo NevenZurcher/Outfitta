@@ -186,6 +186,96 @@ Constraints:`;
             console.warn('Image generation unavailable:', error.message);
             return null;
         }
+    },
+
+    // Generate shopping recommendations based on wardrobe analysis
+    async generateShoppingRecommendations(wardrobeAnalysis, userPreferences, limit = 8) {
+        try {
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+            let prompt = `You are a professional fashion stylist and personal shopper. Analyze the user's wardrobe and preferences to recommend new clothing items they should purchase.
+
+WARDROBE ANALYSIS:
+- Total items: ${wardrobeAnalysis.totalItems}
+- Category breakdown: ${JSON.stringify(wardrobeAnalysis.categoryCounts)}
+- Missing categories: ${wardrobeAnalysis.missingCategories.join(', ') || 'None'}
+- Seasonal gaps: ${wardrobeAnalysis.seasonalGaps.join(', ') || 'None'}
+- Strong categories: ${wardrobeAnalysis.strengths.join(', ') || 'None'}
+- Color distribution: ${JSON.stringify(wardrobeAnalysis.colorDistribution)}
+- Style distribution: ${JSON.stringify(wardrobeAnalysis.styleDistribution)}
+
+USER PREFERENCES:`;
+
+            if (userPreferences.totalRatings > 0) {
+                prompt += `\n- Total rated outfits: ${userPreferences.totalRatings}`;
+
+                if (userPreferences.topItems && userPreferences.topItems.length > 0) {
+                    const topItemsDesc = userPreferences.topItems
+                        .map(item => `${item.description} (${item.category}, ${item.colors?.join('/')})`)
+                        .join(', ');
+                    prompt += `\n- Highly rated items: ${topItemsDesc}`;
+                }
+
+                if (userPreferences.topColorCombos && userPreferences.topColorCombos.length > 0) {
+                    const colorCombos = userPreferences.topColorCombos
+                        .map(combo => combo.colors)
+                        .join(', ');
+                    prompt += `\n- Successful color combinations: ${colorCombos}`;
+                }
+            }
+
+            if (userPreferences.favoriteItems && userPreferences.favoriteItems.length > 0) {
+                const favDesc = userPreferences.favoriteItems
+                    .map(item => `${item.description} (${item.category})`)
+                    .join(', ');
+                prompt += `\n- Favorite items: ${favDesc}`;
+            }
+
+            prompt += `\n\nBased on this analysis, recommend ${limit} new clothing items to purchase. Focus on:
+1. Filling gaps in missing or underrepresented categories
+2. Complementing highly-rated and favorite items
+3. Expanding successful color combinations
+4. Addressing seasonal needs
+5. Maintaining consistency with the user's style preferences
+
+For each recommendation, provide:
+{
+  "recommendations": [
+    {
+      "category": "one of: top, bottom, shoes, outerwear, accessory, dress, suit",
+      "itemType": "specific type (e.g., 'denim jacket', 'white sneakers', 'black blazer')",
+      "description": "detailed description of the recommended item",
+      "suggestedColors": ["color1", "color2"],
+      "suggestedStyle": ["style1", "style2"],
+      "reasoning": "why this item is recommended (be specific about gaps it fills or items it complements)",
+      "pairsWith": ["description of existing items this would pair well with"],
+      "priority": "high, medium, or low"
+    }
+  ]
+}
+
+Prioritize recommendations that:
+- Fill critical wardrobe gaps (missing categories = high priority)
+- Complement favorite/highly-rated items
+- Are versatile and can create multiple outfit combinations
+
+Only respond with valid JSON, no additional text.`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                return parsed.recommendations || [];
+            }
+
+            throw new Error('Failed to parse AI response');
+        } catch (error) {
+            console.error('Error generating shopping recommendations:', error);
+            throw error;
+        }
     }
 };
 

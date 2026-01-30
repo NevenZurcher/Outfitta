@@ -9,6 +9,7 @@ import Navigation from './components/Layout/Navigation';
 import WardrobeView from './components/Wardrobe/WardrobeView';
 import OutfitGenerator from './components/Outfits/OutfitGenerator';
 import OutfitHistory from './components/Outfits/OutfitHistory';
+import ShoppingRecommendations from './components/Shopping/ShoppingRecommendations';
 import LoadingSpinner from './components/Common/LoadingSpinner';
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
           <Route path="/wardrobe" element={<WardrobeView user={user} />} />
           <Route path="/generate" element={<OutfitGenerator user={user} />} />
           <Route path="/history" element={<OutfitHistory user={user} />} />
+          <Route path="/shop" element={<ShoppingRecommendations user={user} />} />
         </Routes>
       </div>
       <Navigation />

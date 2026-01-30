@@ -1,0 +1,440 @@
+.shopping-recommendations-container {
+    padding: 1.5rem;
+    padding-bottom: 6rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.recommendations-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.recommendations-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.recommendations-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Wardrobe Summary */
+.wardrobe-summary {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.wardrobe-summary h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Category Filter */
+.category-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: white;
+}
+
+.filter-btn i {
+    font-size: 1.1rem;
+}
+
+/* Generate Button */
+.generate-btn {
+    margin-bottom: 2rem;
+}
+
+/* Recommendations Grid */
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.recommendation-card {
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Priority Border Accent */
+.recommendation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    opacity: 0.5;
+}
+
+.recommendation-card.priority-high::before {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    opacity: 1;
+}
+
+.recommendation-card.priority-medium::before {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    opacity: 0.8;
+}
+
+.recommendation-card.priority-low::before {
+    background: linear-gradient(135deg, #a8edea, #fed6e3);
+    opacity: 0.6;
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.category-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.category-badge i {
+    font-size: 1rem;
+}
+
+.priority-badge {
+    padding: 0.3rem 0.7rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.priority-high .priority-badge {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.priority-medium .priority-badge {
+    background: rgba(79, 172, 254, 0.2);
+    color: #4facfe;
+}
+
+.priority-low .priority-badge {
+    background: rgba(168, 237, 234, 0.2);
+    color: #a8edea;
+}
+
+/* Item Info */
+.item-type {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.item-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+/* Item Details */
+.item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+.detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.detail-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.detail-label i {
+    font-size: 1rem;
+}
+
+.color-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.color-tag {
+    padding: 0.3rem 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+/* Reasoning Section */
+.reasoning-section {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(79, 172, 254, 0.05);
+    border-left: 3px solid rgba(79, 172, 254, 0.5);
+    border-radius: 8px;
+}
+
+.reasoning-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4facfe;
+    margin-bottom: 0.5rem;
+}
+
+.reasoning-label i {
+    font-size: 1rem;
+}
+
+.reasoning-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+/* Pairs Section */
+.pairs-section {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+.pairs-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.pairs-label i {
+    font-size: 1rem;
+}
+
+.pairs-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pairs-list li {
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding-left: 1.2rem;
+    position: relative;
+}
+
+.pairs-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+}
+
+/* Empty States */
+.empty-state,
+.empty-recommendations {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p,
+.empty-recommendations p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .shopping-recommendations-container {
+        padding: 1rem;
+    }
+
+    .recommendations-header h1 {
+        font-size: 1.6rem;
+    }
+
+    .recommendations-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .category-filter {
+        gap: 0.4rem;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .summary-stats {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+}
+
+/* Animation */
+.recommendation-card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.recommendation-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.recommendation-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.recommendation-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.recommendation-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.recommendation-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.recommendation-card:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+.recommendation-card:nth-child(7) {
+    animation-delay: 0.7s;
+}
+
+.recommendation-card:nth-child(8) {
+    animation-delay: 0.8s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -18,6 +18,11 @@ export default function Navigation() {
                 <i className='bx bx-history nav-icon'></i>
                 <span className="nav-label">History</span>
             </NavLink>
+
+            <NavLink to="/shop" className="nav-item">
+                <i className='bx bx-shopping-bag nav-icon'></i>
+                <span className="nav-label">Shop</span>
+            </NavLink>
         </nav>
     );
 }

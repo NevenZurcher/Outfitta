@@ -8,6 +8,7 @@ import AddClothingItem from './AddClothingItem';
 import BulkUploadModal from './BulkUploadModal';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
+import Pagination from '../Common/Pagination';
 import './WardrobeView.css';
 
 export default function WardrobeView({ user }) {
@@ -20,6 +21,8 @@ export default function WardrobeView({ user }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [filter, setFilter] = useState('all');
     const [showUploadMenu, setShowUploadMenu] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
 
     useEffect(() => {
         loadWardrobe();
@@ -90,12 +93,17 @@ export default function WardrobeView({ user }) {
         setShowDetailModal(true);
     };
 
-    const handleUpdateDescription = async (itemId, newDescription) => {
-        const result = await wardrobeService.updateItem(itemId, { description: newDescription });
+    const handleUpdateDescription = async (itemId, updates) => {
+        // Handle both old signature (string) and new signature (object)
+        const updateData = typeof updates === 'string'
+            ? { description: updates }
+            : updates;
+
+        const result = await wardrobeService.updateItem(itemId, updateData);
         if (result.success) {
             loadWardrobe();
             // Update the selected item to reflect changes
-            setSelectedItem(prev => prev ? { ...prev, description: newDescription } : null);
+            setSelectedItem(prev => prev ? { ...prev, ...updateData } : null);
             return true;
         }
         return false;
@@ -123,6 +131,22 @@ export default function WardrobeView({ user }) {
                     ? items.filter(item => item.inLaundry)
                     : items.filter(item => item.category === filter);
 
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+    // Reset to page 1 when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const categories = ['all', 'clean', 'laundry', 'favorites', 'top', 'bottom', 'shoes', 'outerwear', 'dress', 'accessory'];
 
     if (loading) {
@@ -138,7 +162,7 @@ export default function WardrobeView({ user }) {
             <header className="wardrobe-header">
                 <div>
                     <h1 className="gradient-text">My Wardrobe</h1>
-                    <p>{items.length} items</p>
+                    <p>{items.length} items {filteredItems.length !== items.length && `(${filteredItems.length} filtered)`}</p>
                 </div>
                 <button onClick={handleSignOut} className="btn btn-ghost btn-icon" title="Sign Out">
                     <i className='bx bx-arrow-out-left-square-half'></i>
@@ -171,7 +195,7 @@ export default function WardrobeView({ user }) {
             )}
 
             <div className="wardrobe-grid">
-                {filteredItems.map(item => (
+                {paginatedItems.map(item => (
                     <ClothingCard
                         key={item.id}
                         item={item}
@@ -183,6 +207,12 @@ export default function WardrobeView({ user }) {
                     />
                 ))}
             </div>
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
 
             <div className="fab-container">
                 {showUploadMenu && (

@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import './ClothingCard.css';
 
 export default function ClothingCard({ item, onDelete, onSelect, selected, onToggleFavorite, onGenerateWithItem, onViewDetails, onToggleLaundry }) {
+    const [imageLoaded, setImageLoaded] = useState(false);
+
     const categoryIcons = {
         top: 'bx bx-t-shirt',
         bottom: 'bx bx-pant',
@@ -25,7 +28,14 @@ export default function ClothingCard({ item, onDelete, onSelect, selected, onTog
             onClick={handleCardClick}
         >
             <div className="card-image-container">
-                <img src={item.imageUrl} alt={item.description} className="card-image" />
+                {!imageLoaded && <div className="image-skeleton"></div>}
+                <img
+                    src={item.imageUrl}
+                    alt={item.description}
+                    className={`card-image ${imageLoaded ? 'loaded' : ''}`}
+                    loading="lazy"
+                    onLoad={() => setImageLoaded(true)}
+                />
                 {item.inLaundry && (
                     <div className="laundry-overlay">
                         <span className="laundry-badge">

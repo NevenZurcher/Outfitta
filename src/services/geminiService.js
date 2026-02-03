@@ -6,7 +6,7 @@ export const geminiService = {
     // Analyze clothing item(s) from image - can detect multiple items
     async analyzeClothing(imageFile) {
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
             // Convert image to base64
             const base64Image = await fileToBase64(imageFile);
@@ -65,7 +65,7 @@ Rules:
     // Generate outfit suggestions
     async generateOutfit(wardrobeItems, constraints = {}) {
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
             const { weather, occasion, anchorItem, style, userPreferences } = constraints;
 
@@ -226,7 +226,7 @@ Constraints:`;
     // Generate shopping recommendations based on wardrobe analysis
     async generateShoppingRecommendations(wardrobeAnalysis, userPreferences, limit = 8) {
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
             let prompt = `You are a professional fashion stylist and personal shopper. Analyze the user's wardrobe and preferences to recommend new clothing items they should purchase.
 

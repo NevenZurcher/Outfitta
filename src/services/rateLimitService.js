@@ -37,6 +37,10 @@ export const rateLimitService = {
                 limit: limit
             };
         } catch (error) {
+            // If permission denied (rules not set up), fail open but don't spam console
+            if (error.code === 'permission-denied') {
+                return { allowed: true, remaining: this.LIMITS[actionType] };
+            }
             console.error('Error checking rate limit:', error);
             // Default to allowed in case of error (fail open)
             return { allowed: true, remaining: 1, error: error.message };
@@ -66,6 +70,10 @@ export const rateLimitService = {
 
             return { success: true };
         } catch (error) {
+            // If permission denied, ignore silently (allow usage without tracking)
+            if (error.code === 'permission-denied') {
+                return { success: true };
+            }
             console.error('Error incrementing usage:', error);
             return { success: false, error: error.message };
         }

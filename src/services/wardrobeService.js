@@ -16,7 +16,7 @@ import {
     getDownloadURL,
     deleteObject
 } from 'firebase/storage';
-import { geminiService } from './geminiService';
+import { azureService as geminiService } from './azureService';
 
 export const wardrobeService = {
     // Add new clothing item

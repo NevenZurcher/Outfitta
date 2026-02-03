@@ -11,7 +11,7 @@ import {
     doc
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { geminiService } from './geminiService';
+import { azureService as geminiService } from './azureService';
 
 export const outfitService = {
     // Generate outfit

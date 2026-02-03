@@ -1,6 +1,6 @@
 import { wardrobeService } from './wardrobeService';
 import { preferencesService } from './preferencesService';
-import { geminiService } from './geminiService';
+import { azureService as geminiService } from './azureService';
 
 export const recommendationService = {
     // Analyze wardrobe to identify gaps and patterns

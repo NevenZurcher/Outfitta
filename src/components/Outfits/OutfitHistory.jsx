@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { outfitService } from '../../services/outfitService';
 import { preferencesService } from '../../services/preferencesService';
+import ClothingDetailModal from '../Wardrobe/ClothingDetailModal';
 import OutfitCollage from './OutfitCollage';
 import StarRating from '../Common/StarRating';
 import LoadingSpinner from '../Common/LoadingSpinner';
@@ -13,6 +14,8 @@ export default function OutfitHistory({ user }) {
     const [outfits, setOutfits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [selectedDetailItem, setSelectedDetailItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const [filter, setFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const outfitsPerPage = 6;
@@ -93,6 +96,16 @@ export default function OutfitHistory({ user }) {
     const handlePageChange = (page) => {
         setCurrentPage(page);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleViewDetails = (item) => {
+        setSelectedDetailItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handleCloseDetailModal = () => {
+        setShowDetailModal(false);
+        setSelectedDetailItem(null);
     };
 
     if (loading) {
@@ -182,7 +195,10 @@ export default function OutfitHistory({ user }) {
 
                         {/* Display collage of selected items */}
                         {outfit.selectedItems && outfit.selectedItems.length > 0 && (
-                            <OutfitCollage selectedItems={outfit.selectedItems} />
+                            <OutfitCollage
+                                selectedItems={outfit.selectedItems}
+                                onItemClick={handleViewDetails}
+                            />
                         )}
 
                         {outfit.imageUrl && (
@@ -243,6 +259,14 @@ export default function OutfitHistory({ user }) {
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
             />
+
+            {showDetailModal && selectedDetailItem && (
+                <ClothingDetailModal
+                    item={selectedDetailItem}
+                    onClose={handleCloseDetailModal}
+                // Read-only mode: no update/delete handlers passed
+                />
+            )}
         </div>
     );
 }

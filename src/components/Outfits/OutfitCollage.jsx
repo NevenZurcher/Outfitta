@@ -1,6 +1,6 @@
 import './OutfitCollage.css';
 
-export default function OutfitCollage({ selectedItems }) {
+export default function OutfitCollage({ selectedItems, onItemClick }) {
     if (!selectedItems || selectedItems.length === 0) {
         return null;
     }
@@ -47,7 +47,11 @@ export default function OutfitCollage({ selectedItems }) {
             </h3>
             <div className="collage-grid">
                 {itemsToDisplay.map(({ item, label }) => (
-                    <div key={item.id} className="collage-item card-glass">
+                    <div
+                        key={item.id}
+                        className={`collage-item card-glass ${onItemClick ? 'clickable' : ''}`}
+                        onClick={() => onItemClick && onItemClick(item)}
+                    >
                         <div className="collage-image-wrapper">
                             <img
                                 src={item.imageUrl}

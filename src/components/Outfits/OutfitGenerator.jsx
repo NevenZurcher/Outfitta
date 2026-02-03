@@ -3,10 +3,11 @@ import { useLocation } from 'react-router-dom';
 import { wardrobeService } from '../../services/wardrobeService';
 import { outfitService } from '../../services/outfitService';
 import { weatherService } from '../../services/weatherService';
-import { geminiService } from '../../services/geminiService';
+import { azureService as geminiService } from '../../services/azureService';
 import { preferencesService } from '../../services/preferencesService';
 import { rateLimitService } from '../../services/rateLimitService';
 import ClothingCard from '../Wardrobe/ClothingCard';
+import ClothingDetailModal from '../Wardrobe/ClothingDetailModal';
 import OutfitCollage from './OutfitCollage';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
@@ -27,6 +28,8 @@ export default function OutfitGenerator({ user }) {
     const [currentOutfitId, setCurrentOutfitId] = useState(null);
     const [showAllAnchorItems, setShowAllAnchorItems] = useState(false);
     const [error, setError] = useState('');
+    const [selectedDetailItem, setSelectedDetailItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
 
     const location = useLocation();
 
@@ -222,6 +225,16 @@ export default function OutfitGenerator({ user }) {
         }
     };
 
+    const handleViewDetails = (item) => {
+        setSelectedDetailItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handleCloseDetailModal = () => {
+        setShowDetailModal(false);
+        setSelectedDetailItem(null);
+    };
+
     const toggleItemSelection = (item) => {
         setSelectedItems(prev => {
             const isSelected = prev.find(i => i.id === item.id);
@@ -339,7 +352,10 @@ export default function OutfitGenerator({ user }) {
                     <h2>Your Outfit</h2>
 
                     {/* Display collage of selected items */}
-                    <OutfitCollage selectedItems={outfitSelectedItems} />
+                    <OutfitCollage
+                        selectedItems={outfitSelectedItems}
+                        onItemClick={handleViewDetails}
+                    />
 
                     {(generatingImage || generatedImage) && (
                         <div className="outfit-visualization">
@@ -404,6 +420,14 @@ export default function OutfitGenerator({ user }) {
                         </div>
                     )}
                 </div>
+            )}
+
+            {showDetailModal && selectedDetailItem && (
+                <ClothingDetailModal
+                    item={selectedDetailItem}
+                    onClose={handleCloseDetailModal}
+                // Read-only mode
+                />
             )}
         </div>
     );

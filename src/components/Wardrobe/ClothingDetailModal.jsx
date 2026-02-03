@@ -181,13 +181,15 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
                                     <>
                                         <i className={`${categoryIcons[item.category] || 'bx bx-hanger'} category-icon`}></i>
                                         <span className="category-name">{item.category}</span>
-                                        <button
-                                            className="edit-btn-inline"
-                                            onClick={() => setIsEditingCategory(true)}
-                                            title="Edit category"
-                                        >
-                                            <i className='bx bx-pencil'></i>
-                                        </button>
+                                        {onUpdate && (
+                                            <button
+                                                className="edit-btn-inline"
+                                                onClick={() => setIsEditingCategory(true)}
+                                                title="Edit category"
+                                            >
+                                                <i className='bx bx-pencil'></i>
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -210,7 +212,7 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
                         <div className="detail-section">
                             <div className="section-header">
                                 <h3>Description</h3>
-                                {!isEditing && (
+                                {!isEditing && onUpdate && (
                                     <button
                                         className="edit-btn"
                                         onClick={() => setIsEditing(true)}
@@ -257,7 +259,7 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
                             <div className="detail-section">
                                 <div className="section-header">
                                     <h3>Colors</h3>
-                                    {!isEditingColors && (
+                                    {!isEditingColors && onUpdate && (
                                         <button
                                             className="edit-btn"
                                             onClick={() => setIsEditingColors(true)}
@@ -362,12 +364,14 @@ export default function ClothingDetailModal({ item, onClose, onUpdate, onDelete,
                                     {item.inLaundry ? 'Mark as Clean' : 'Add to Laundry'}
                                 </button>
                             )}
-                            <button
-                                className="btn btn-danger btn-sm"
-                                onClick={handleDelete}
-                            >
-                                <i className='bx bx-trash'></i> Delete Item
-                            </button>
+                            {onDelete && (
+                                <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={handleDelete}
+                                >
+                                    <i className='bx bx-trash'></i> Delete Item
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

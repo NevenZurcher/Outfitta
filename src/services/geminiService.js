@@ -93,6 +93,26 @@ Constraints:`;
                 prompt += `\n- Style preference: ${style}`;
             }
 
+            // Add gender constraint
+            if (userPreferences?.gender) {
+                prompt += `\n- User Gender: ${userPreferences.gender}`;
+                if (userPreferences.gender.toLowerCase() === 'male') {
+                    prompt += `\n  IMPORTANT: Do NOT suggest dresses, skirts, or other typically female-only items.`;
+                } else if (userPreferences.gender.toLowerCase() === 'female') {
+                    // No specific restrictions for female usually, but good to know
+                }
+            }
+
+            // Add gender constraint
+            if (userPreferences?.gender) {
+                prompt += `\n- User Gender: ${userPreferences.gender}`;
+                if (userPreferences.gender.toLowerCase() === 'male') {
+                    prompt += `\n  IMPORTANT: Do NOT suggest dresses, skirts, or other typically female-only items.`;
+                } else if (userPreferences.gender.toLowerCase() === 'female') {
+                    // No specific restrictions for female usually, but good to know
+                }
+            }
+
             // Add learned preferences from ratings
             if (userPreferences) {
                 prompt += `\n\nUser Preferences (learned from ${userPreferences.totalRatings || 0} rated outfits):`;

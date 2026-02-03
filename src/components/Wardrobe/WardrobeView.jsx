@@ -5,10 +5,10 @@ import { authService } from '../../services/authService';
 import ClothingCard from './ClothingCard';
 import ClothingDetailModal from './ClothingDetailModal';
 import AddClothingItem from './AddClothingItem';
-import BulkUploadModal from './BulkUploadModal';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
 import Pagination from '../Common/Pagination';
+import ProfileButton from '../Common/ProfileButton';
 import './WardrobeView.css';
 
 export default function WardrobeView({ user }) {
@@ -16,11 +16,9 @@ export default function WardrobeView({ user }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [filter, setFilter] = useState('all');
-    const [showUploadMenu, setShowUploadMenu] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
@@ -28,16 +26,7 @@ export default function WardrobeView({ user }) {
         loadWardrobe();
     }, [user]);
 
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (showUploadMenu && !e.target.closest('.fab-container')) {
-                setShowUploadMenu(false);
-            }
-        };
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, [showUploadMenu]);
+
 
     const loadWardrobe = async () => {
         setLoading(true);
@@ -164,9 +153,12 @@ export default function WardrobeView({ user }) {
                     <h1 className="gradient-text">My Wardrobe</h1>
                     <p>{items.length} items {filteredItems.length !== items.length && `(${filteredItems.length} filtered)`}</p>
                 </div>
-                <button onClick={handleSignOut} className="btn btn-ghost btn-icon" title="Sign Out">
-                    <i className='bx bx-arrow-out-left-square-half'></i>
-                </button>
+                <div className="header-actions">
+                    <ProfileButton user={user} />
+                    <button onClick={handleSignOut} className="btn btn-ghost btn-icon" title="Sign Out">
+                        <i className='bx bx-arrow-out-left-square-half'></i>
+                    </button>
+                </div>
             </header>
 
             <div className="filter-bar">
@@ -214,45 +206,19 @@ export default function WardrobeView({ user }) {
                 onPageChange={handlePageChange}
             />
 
-            <div className="fab-container">
-                {showUploadMenu && (
-                    <div className="fab-menu">
-                        <button
-                            className="fab-menu-item"
-                            onClick={() => {
-                                setShowAddModal(true);
-                                setShowUploadMenu(false);
-                            }}
-                        >
-                            <i className='bx bx-plus'></i>
-                            <span>Single Upload</span>
-                        </button>
-                        <button
-                            className="fab-menu-item"
-                            onClick={() => {
-                                setShowBulkUploadModal(true);
-                                setShowUploadMenu(false);
-                            }}
-                        >
-                            <i className='bx bx-upload'></i>
-                            <span>Bulk Upload</span>
-                        </button>
-                    </div>
-                )}
-                <button
-                    onClick={() => setShowUploadMenu(!showUploadMenu)}
-                    className={`fab ${showUploadMenu ? 'active' : ''}`}
-                    title="Add clothing item"
-                >
-                    {showUploadMenu ? '✕' : '+'}
-                </button>
-            </div>
+            <button
+                onClick={() => setShowAddModal(true)}
+                className="fab"
+                title="Add clothing items"
+            >
+                +
+            </button>
 
             {showAddModal && (
                 <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Add Clothing Item</h2>
+                            <h2>Add Clothing Items</h2>
                             <button onClick={() => setShowAddModal(false)} className="btn btn-ghost btn-icon">
                                 ✕
                             </button>
@@ -269,14 +235,6 @@ export default function WardrobeView({ user }) {
                     onUpdate={handleUpdateDescription}
                     onDelete={handleDelete}
                     onToggleLaundry={handleToggleLaundry}
-                />
-            )}
-
-            {showBulkUploadModal && (
-                <BulkUploadModal
-                    user={user}
-                    onClose={() => setShowBulkUploadModal(false)}
-                    onSuccess={loadWardrobe}
                 />
             )}
         </div>

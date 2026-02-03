@@ -6,8 +6,11 @@
 }
 
 .recommendations-header {
-    text-align: center;
+    text-align: left;
     margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .recommendations-header h1 {

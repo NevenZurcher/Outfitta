@@ -22,10 +22,16 @@ export const authService = {
                 email: user.email,
                 displayName: displayName || email.split('@')[0],
                 createdAt: new Date(),
-                preferences: {
-                    location: '',
-                    style: []
-                }
+                setupCompleted: false,
+                gender: '',
+                stylePreferences: [],
+                favoriteColors: [],
+                sizes: {
+                    top: '',
+                    bottom: '',
+                    shoes: ''
+                },
+                location: ''
             });
 
             return { success: true, user };
@@ -57,10 +63,16 @@ export const authService = {
                     email: user.email,
                     displayName: user.displayName || user.email.split('@')[0],
                     createdAt: new Date(),
-                    preferences: {
-                        location: '',
-                        style: []
-                    }
+                    setupCompleted: false,
+                    gender: '',
+                    stylePreferences: [],
+                    favoriteColors: [],
+                    sizes: {
+                        top: '',
+                        bottom: '',
+                        shoes: ''
+                    },
+                    location: ''
                 });
             }
 

@@ -489,3 +489,50 @@ p {
   overflow-y: auto;
   animation: fadeIn var(--transition-base);
 }
+
+/* Floating Profile Button */
+.profile-floating-btn {
+  position: fixed;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  width: 40px;
+  height: 40px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  z-index: 1100;
+  /* Above nav and content */
+  text-decoration: none;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-floating-btn:hover {
+  background: var(--bg-elevated);
+  transform: scale(1.05);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.profile-icon-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-img-small {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

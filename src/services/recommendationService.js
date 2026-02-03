@@ -72,12 +72,16 @@ export const recommendationService = {
             // Analyze current wardrobe
             const wardrobeAnalysis = this.analyzeWardrobe(wardrobeItems);
 
-            // Get user preferences
+            // Get user preferences and profile (for gender)
             const prefsResult = await preferencesService.getPreferences(userId);
+            const profileResult = await import('./userProfileService').then(m => m.userProfileService.getUserProfile(userId));
             const topItemsResult = await preferencesService.getTopRatedItems(userId, 5);
             const topColorsResult = await preferencesService.getTopColorCombinations(userId, 3);
 
+            const gender = profileResult.success ? profileResult.profile.gender : 'neutral';
+
             const userPreferences = {
+                gender, // Add gender to preferences
                 totalRatings: prefsResult.success ? Object.keys(prefsResult.preferences.itemPreferences || {}).length : 0,
                 topItems: topItemsResult.success ? topItemsResult.items.map(item => {
                     const wardrobeItem = wardrobeItems.find(wi => wi.id === item.id);

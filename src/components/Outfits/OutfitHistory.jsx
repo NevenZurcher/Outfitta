@@ -6,6 +6,7 @@ import StarRating from '../Common/StarRating';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
 import Pagination from '../Common/Pagination';
+import ProfileButton from '../Common/ProfileButton';
 import './OutfitHistory.css';
 
 export default function OutfitHistory({ user }) {
@@ -105,8 +106,11 @@ export default function OutfitHistory({ user }) {
     return (
         <div className="history-container">
             <header className="history-header">
-                <h1 className="gradient-text">Outfit History</h1>
-                <p>{outfits.length} outfits generated {filteredOutfits.length !== outfits.length && `(${filteredOutfits.length} filtered)`}</p>
+                <div>
+                    <h1 className="gradient-text">Outfit History</h1>
+                    <p>{outfits.length} outfits generated {filteredOutfits.length !== outfits.length && `(${filteredOutfits.length} filtered)`}</p>
+                </div>
+                <ProfileButton user={user} />
             </header>
 
             <div className="filter-bar">

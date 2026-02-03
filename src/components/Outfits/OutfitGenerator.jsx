@@ -5,10 +5,12 @@ import { outfitService } from '../../services/outfitService';
 import { weatherService } from '../../services/weatherService';
 import { geminiService } from '../../services/geminiService';
 import { preferencesService } from '../../services/preferencesService';
+import { rateLimitService } from '../../services/rateLimitService';
 import ClothingCard from '../Wardrobe/ClothingCard';
 import OutfitCollage from './OutfitCollage';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
+import ProfileButton from '../Common/ProfileButton';
 import './OutfitGenerator.css';
 
 export default function OutfitGenerator({ user }) {
@@ -93,6 +95,13 @@ export default function OutfitGenerator({ user }) {
         setGeneratedImage(null);
 
         try {
+            // Check rate limit first
+            const limitCheck = await rateLimitService.checkLimit(user.uid, 'OUTFIT_GENERATION');
+            if (!limitCheck.allowed) {
+                setError(`Daily limit reached! You have ${limitCheck.limit} outfit generations per day. Please try again tomorrow.`);
+                return;
+            }
+
             // Fetch user preferences for AI learning (with error handling)
             let prefsResult = { success: false };
             let topItemsResult = { success: false };
@@ -100,7 +109,14 @@ export default function OutfitGenerator({ user }) {
             let lowItemsResult = { success: false };
 
             try {
+                // Fetch full profile for gender
+                const profileResult = await import('../../services/userProfileService').then(m => m.userProfileService.getUserProfile(user.uid));
+                const gender = profileResult.success ? profileResult.profile.gender : 'neutral';
+
                 prefsResult = await preferencesService.getPreferences(user.uid);
+                // Add gender to prefsResult so we can use it below
+                prefsResult.gender = gender;
+
                 topItemsResult = await preferencesService.getTopRatedItems(user.uid, 5);
                 topColorsResult = await preferencesService.getTopColorCombinations(user.uid, 3);
                 lowItemsResult = await preferencesService.getLowRatedItems(user.uid, 3);
@@ -110,6 +126,7 @@ export default function OutfitGenerator({ user }) {
 
             // Build user preferences object for AI
             const userPreferences = {
+                gender: prefsResult.gender || 'neutral',
                 totalRatings: prefsResult.success ? Object.keys(prefsResult.preferences.itemPreferences || {}).length : 0,
                 topItems: topItemsResult.success ? topItemsResult.items.map(item => {
                     // Find the actual wardrobe item to get description
@@ -158,6 +175,9 @@ export default function OutfitGenerator({ user }) {
                 setGeneratedOutfit(result.outfit);
                 setOutfitSelectedItems(result.selectedItems || []);
                 setCurrentOutfitId(result.id); // Save outfit ID for later image update
+
+                // Increment usage count
+                await rateLimitService.incrementUsage(user.uid, 'OUTFIT_GENERATION');
 
                 // TEMPORARILY DISABLED: Generate visual representation if visualPrompt exists
                 // Uncomment to re-enable image generation (will use API credits)
@@ -216,8 +236,11 @@ export default function OutfitGenerator({ user }) {
     return (
         <div className="outfit-generator-container">
             <header className="generator-header">
-                <h1 className="gradient-text">Generate Outfit</h1>
-                <p>Let AI create the perfect outfit for you</p>
+                <div>
+                    <h1 className="gradient-text">Generate Outfit</h1>
+                    <p>Let AI create the perfect outfit for you</p>
+                </div>
+                <ProfileButton user={user} />
             </header>
 
             <div className="generator-controls">

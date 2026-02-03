@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { recommendationService } from '../../services/recommendationService';
+import { rateLimitService } from '../../services/rateLimitService';
 import { wardrobeService } from '../../services/wardrobeService';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ErrorMessage from '../Common/ErrorMessage';
+import ProfileButton from '../Common/ProfileButton';
 import './ShoppingRecommendations.css';
 
 export default function ShoppingRecommendations({ user }) {
@@ -33,6 +35,13 @@ export default function ShoppingRecommendations({ user }) {
         setError('');
 
         try {
+            // Check rate limit first
+            const limitCheck = await rateLimitService.checkLimit(user.uid, 'SHOPPING_RECOMMENDATIONS');
+            if (!limitCheck.allowed) {
+                setError(`Daily limit reached! You have ${limitCheck.limit} recommendation sets per day. Please try again tomorrow.`);
+                return;
+            }
+
             const result = await recommendationService.generateRecommendations(
                 user.uid,
                 items,
@@ -42,6 +51,8 @@ export default function ShoppingRecommendations({ user }) {
             if (result.success) {
                 setRecommendations(result.recommendations);
                 setWardrobeAnalysis(result.wardrobeAnalysis);
+                // Increment usage count
+                await rateLimitService.incrementUsage(user.uid, 'SHOPPING_RECOMMENDATIONS');
             } else {
                 setError(result.error || 'Failed to generate recommendations');
             }
@@ -82,8 +93,11 @@ export default function ShoppingRecommendations({ user }) {
     return (
         <div className="shopping-recommendations-container">
             <header className="recommendations-header">
-                <h1 className="gradient-text">Shopping Recommendations</h1>
-                <p>AI-powered suggestions based on your wardrobe and style</p>
+                <div>
+                    <h1 className="gradient-text">Shopping Recommendations</h1>
+                    <p>AI-powered suggestions based on your wardrobe and style</p>
+                </div>
+                <ProfileButton user={user} />
             </header>
 
             {wardrobeItems.length === 0 ? (

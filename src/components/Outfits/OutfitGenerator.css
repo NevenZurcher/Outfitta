@@ -7,8 +7,11 @@
 }
 
 .generator-header {
-    text-align: center;
+    text-align: left;
     margin-bottom: var(--spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .generator-header h1 {

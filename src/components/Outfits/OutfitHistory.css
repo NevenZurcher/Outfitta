@@ -18,8 +18,11 @@
 }
 
 .history-header {
-    text-align: center;
+    text-align: left;
     margin-bottom: var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .history-header h1 {
